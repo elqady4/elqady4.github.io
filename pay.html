@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Save JSON Data to Cloud Firestore</title>
+</head>
+<body>
+  <h1>Save JSON Data to Cloud Firestore</h1>
+  <form id="json-form">
+    <label for="json-data">JSON Data:</label>
+    <br>
+    <textarea id="json-data" name="json-data"></textarea>
+    <br>
+    <button type="submit">Save Data</button>
+  </form>
+
+  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore.js"></script>
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAvlvxDW2aJFn1VVbgILYGdDpXgRWpbepg",
+      authDomain: "AIzaSyAvlvxDW2aJFn1VVbgILYGdDpXgRWpbepg",
+      projectId: "payment-7a1fe",
+      storageBucket: "payment-7a1fe.appspot.com",
+      messagingSenderId: "546966340497",
+      appId: "1:546966340497:web:7acdbb37906eac3f675030"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    // Reference to the Cloud Firestore database
+    const db = firebase.firestore();
+
+    // Submit handler for the JSON form
+    const jsonForm = document.querySelector('#json-form');
+    jsonForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Get the JSON data from the form
+      const jsonData = document.querySelector('#json-data').value;
+
+      // Parse the JSON data
+      let parsedJsonData;
+      try {
+        parsedJsonData = JSON.parse(jsonData);
+      } catch (error) {
+        alert('Error parsing JSON data');
+        return;
+      }
+
+      // Save the JSON data to Cloud Firestore
+      try {
+        await db.collection('json-data').doc().set(parsedJsonData);
+        alert('JSON data saved to Cloud Firestore');
+      } catch (error) {
+        alert('Error saving JSON data to Cloud Firestore');
+      }
+    });
+  </script>
+</body>
+</html>
