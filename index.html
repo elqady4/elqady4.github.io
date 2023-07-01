@@ -1,59 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Save JSON Data to Cloud Firestore</title>
+  <title>Webhook Example</title>
 </head>
 <body>
-  <h1>Save JSON Data to Cloud Firestore</h1>
-  <form id="json-form">
-    <label for="json-data">JSON Data:</label>
-    <br>
-    <textarea id="json-data" name="json-data"></textarea>
-    <br>
-    <button type="submit">Save Data</button>
-  </form>
+  <h1>Webhook Example</h1>
+  <div id="output"></div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore.js"></script>
   <script>
-    // Initialize Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyAvlvxDW2aJFn1VVbgILYGdDpXgRWpbepg",
-      authDomain: "AIzaSyAvlvxDW2aJFn1VVbgILYGdDpXgRWpbepg",
-      projectId: "payment-7a1fe",
-      storageBucket: "payment-7a1fe.appspot.com",
-      messagingSenderId: "546966340497",
-      appId: "1:546966340497:web:7acdbb37906eac3f675030"
+    function updateOutput(data) {
+      const outputDiv = document.getElementById('output');
+      const pre = document.createElement('pre');
+      pre.textContent = JSON.stringify(data, null, 2);
+      outputDiv.appendChild(pre);
+    }
+  </script>
+
+  <script>
+    const http = new XMLHttpRequest();
+    http.open('POST', '/webhook');
+    http.setRequestHeader('Content-Type', 'application/json');
+    http.onreadystatechange = function() {
+      if (this.readyState === 4 && this.status === 200) {
+        const data = JSON.parse(this.responseText);
+        updateOutput(data);
+      }
     };
-    firebase.initializeApp(firebaseConfig);
+    const requestData = { foo: 'bar' };
+    http.send(JSON.stringify(requestData));
+  </script>
 
-    // Reference to the Cloud Firestore database
-    const db = firebase.firestore();
+  <script>
+    const http = require('http');
 
-    // Submit handler for the JSON form
-    const jsonForm = document.querySelector('#json-form');
-    jsonForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      // Get the JSON data from the form
-      const jsonData = document.querySelector('#json-data').value;
-
-      // Parse the JSON data
-      let parsedJsonData;
-      try {
-        parsedJsonData = JSON.parse(jsonData);
-      } catch (error) {
-        alert('Error parsing JSON data');
-        return;
+    // Create an HTTP server that listens for incoming requests on port 3000
+    const server = http.createServer((req, res) => {
+      if (req.method === 'POST' && req.url === '/webhook') {
+        let body = '';
+        req.on('data', chunk => {
+          // Append incoming data chunks to the body variable
+          body += chunk.toString();
+        });
+        req.on('end', () => {
+          try {
+            // Parse the JSON data in the request body
+            const data = JSON.parse(body);
+            // Do something with the data, such as saving it to a database or triggering a function
+            console.log('Received data:', data);
+            // Send a response back to the client
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
+            res.end('Webhook received');
+          } catch (error) {
+            // Handle any errors that occur while parsing the request data
+            console.error('Error parsing request data:', error);
+            res.writeHead(400, { 'Content-Type': 'text/plain' });
+            res.end('Error parsing request data');
+          }
+        });
+      } else {
+        // Handle requests to other paths or methods
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Not found');
       }
+    });
 
-      // Save the JSON data to Cloud Firestore
-      try {
-        await db.collection('payment-7a1fe').doc().set(parsedJsonData);
-        alert('JSON data saved to Cloud Firestore');
-      } catch (error) {
-        alert('Error saving JSON data to Cloud Firestore');
-      }
+    server.listen(3000, () => {
+      console.log('Webhook server listening on port 3000');
     });
   </script>
 </body>
