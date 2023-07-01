@@ -49,7 +49,7 @@
 
       // Save the JSON data to Cloud Firestore
       try {
-        await db.collection('json-data').doc().set(parsedJsonData);
+        await db.collection('payment-7a1fe').doc().set(parsedJsonData);
         alert('JSON data saved to Cloud Firestore');
       } catch (error) {
         alert('Error saving JSON data to Cloud Firestore');
